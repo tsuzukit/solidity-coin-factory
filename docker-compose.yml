@@ -1,0 +1,14 @@
+version: "2"
+
+services:
+
+  solidity-inbox:
+    image: solidity-coin-factory
+    container_name: solidity-coin-factory
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - .:/usr/repo
+    environment:
+      TZ: Asia/Tokyo
