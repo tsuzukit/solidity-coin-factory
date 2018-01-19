@@ -2,6 +2,13 @@
 
 Install docker for mac
 
+# Software versions
+
+ name         | version       |
+|--------------|---------------|
+| solidity     | 0.4.17        |
+| solidity-compiler       | v0.4.19+commit.c4cbbb05 |
+
 
 # How to start server
 
