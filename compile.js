@@ -1,15 +1,28 @@
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const solc = require('solc');
 
-const inboxPath = path.resolve(__dirname, 'contracts', 'TOKEN_NAME.sol');
-const source = fs.readFileSync(inboxPath, 'utf8');
+const buildPath = path.resolve(__dirname, 'build');
+fs.removeSync(buildPath);
 
-var numberOfContracts = 1;
-var nameOfContracts = ':TOKEN_NAME';
+compile = (fileName) => {
+  console.log('Compiling ' + fileName + ' file');
+  const tokenPath = path.resolve(__dirname, 'contracts', fileName);
+  const source = fs.readFileSync(tokenPath, 'utf8');
+  const output = solc.compile(source, 1).contracts;
+  console.log('Compile ' + fileName + ' success');
 
-console.log('Compiling solidity source file');
-module.exports = solc.compile(source, numberOfContracts).contracts[nameOfContracts];
-console.log('Compile success');
+  fs.ensureDirSync(buildPath);
 
+  for (let contract in output) {
+    if (contract !== ':CustomToken' && contract !== ':Crowdsale') { continue; }
+    fs.outputJsonSync(
+      path.resolve(buildPath, contract.replace(':', '') + '.json'),
+      output[contract]
+    );
+  }
+};
+
+compile('Token.sol');
+compile('Crowdsale.sol');
 
