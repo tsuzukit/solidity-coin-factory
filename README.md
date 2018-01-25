@@ -78,8 +78,8 @@ When crowdsale contract recieves ether, it will transfer tokens to investors.
 
 # TODO
 
-- [ ] Write test for `checkGoalReached`
-- [ ] Write test for `safeWithdrawal`
+- [x] Write test for `checkGoalReached`
+- [x] Write test for `safeWithdrawal`
 - [ ] Implement minimum investment threshold 
 - [ ] Implement maximum investment threshold 
 - [ ] Implement workaround for investment overshoot
