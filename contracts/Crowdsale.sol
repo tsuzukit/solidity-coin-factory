@@ -12,8 +12,8 @@ contract Crowdsale {
     uint public price;
     token public tokenReward;
     mapping(address => uint256) public balanceOf;
-    bool fundingGoalReached = false;
-    bool crowdsaleClosed = false;
+    bool public fundingGoalReached = false;
+    bool public crowdsaleClosed = false;
 
     event GoalReached(address recipient, uint totalAmountRaised);
     event FundTransfer(address backer, uint amount, bool isContribution);
@@ -42,9 +42,9 @@ contract Crowdsale {
      *
      * The function without name is the default function that is called whenever anyone sends funds to a contract
      */
-    function () checkDeadline payable {
+    function () payable {
         require(!crowdsaleClosed);
-        uint256 amount = msg.value * 10 ** uint256(18);
+        uint256 amount = msg.value;
         balanceOf[msg.sender] += amount;
         amountRaised += amount;
         tokenReward.transfer(msg.sender, amount / price);
@@ -54,19 +54,15 @@ contract Crowdsale {
 
     modifier afterDeadline() { if (now >= deadline) _; }
 
-    modifier checkDeadline() {
-        if (now >= deadline) {
-            crowdsaleClosed = true;
-        }
-        _;
-    }
-
     /**
      * Check if goal was reached
      *
      * Checks if the goal or time limit has been reached and ends the campaign
      */
     function checkGoalReached() {
+        if (now >= deadline) {
+            crowdsaleClosed = true;
+        }
         if (amountRaised >= fundingGoal){
             fundingGoalReached = true;
             GoalReached(beneficiary, amountRaised);
