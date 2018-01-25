@@ -46,6 +46,13 @@ Create `config.json` at root folder
 $ sh script/compile.sh
 ```
 
+# Test
+
+```
+$ sh script/enter.sh
+# npm run test
+```
+
 # Deploy token
 
 Specify token specs in `config.json`
