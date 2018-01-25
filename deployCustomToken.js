@@ -24,8 +24,8 @@ const deploy = async () => {
     ],
   }).encodeABI();
 
-  const gas = parseInt(1000000).toString(16);
-  const gasPrice = parseInt(1000000).toString(16);
+  const gas = parseInt(2000000).toString(16);
+  const gasPrice = parseInt(2000000).toString(16);
   const transactionObject = {
     gas: gas,
     gasPrice: gasPrice,
