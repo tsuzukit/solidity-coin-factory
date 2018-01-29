@@ -5,12 +5,14 @@ interface token {
 }
 
 contract Crowdsale {
+    address public owner;
     address public beneficiary;
     uint public fundingGoal;
     uint public amountRaised;
     uint public deadline;
     uint public price;
     token public tokenReward;
+    uint8 public decimals;
     mapping(address => uint256) public balanceOf;
     bool public fundingGoalReached = false;
     bool public crowdsaleClosed = false;
@@ -28,13 +30,16 @@ contract Crowdsale {
         uint fundingGoalInWei,
         uint durationInMinutes,
         uint costOfEachTokenInWei,
-        address addressOfTokenUsedAsReward
+        address addressOfTokenUsedAsReward,
+        uint8 tokenDecimals
     ) public {
+        owner = msg.sender;
         beneficiary = ifSuccessfulSendTo;
         fundingGoal = fundingGoalInWei;
         deadline = now + durationInMinutes * 1 minutes;
         price = costOfEachTokenInWei;
         tokenReward = token(addressOfTokenUsedAsReward);
+        decimals = tokenDecimals;
     }
 
     /**
@@ -47,12 +52,23 @@ contract Crowdsale {
         uint256 amount = msg.value;
         balanceOf[msg.sender] += amount;
         amountRaised += amount;
-        tokenReward.transfer(msg.sender, amount / price);
+        tokenReward.transfer(msg.sender, amount * 10 ** uint256(decimals) / price);
         FundTransfer(msg.sender, amount, true);
         checkGoalReached();
     }
 
     modifier afterDeadline() { if (now >= deadline) _; }
+    modifier onlyOwner {
+        require(msg.sender == owner);
+        _;
+    }
+
+    /**
+     * Transfer token back to owner in the case there is left over after token sale
+     */
+    function transferTokenBackToOwner(uint256 amount) onlyOwner public {
+        tokenReward.transfer(owner, amount);
+    }
 
     /**
      * Check if goal was reached

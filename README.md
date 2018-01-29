@@ -22,22 +22,27 @@ Create `config.json` at root folder
 
 ```
 {
-  "endpoint": "https://rinkeby.infura.io/<TOKEN from Infura>",
-  "address": "<ETH Address>",
-  "privateKey": "<ETH Private Key>"
+  "endpoint": "< endpoint create via infura >",
+  "address": "< ETH address. This will be token owner >",
+  "privateKey": "< ETH private key >",
   "customToken": {
-    "initialSupply": "1000000",
+    "initialSupply": "500000000000000000000000", // total supply. 1 = 1 / 10^decimal 
     "tokenName": "SaunaToken",
-    "tokenSymbol": "SAU"
+    "tokenSymbol": "SAU",
+    "decimals": 18 // 18 decimals is strongly recommended
   },
+  "customTokenAddress": "< Cutom token contract address >", // Required to dploy crowdsale and charge to it
+  "crowdsaleAddress": "< Crowdsale contract address >", // Required to charge token to crowdsale
   "crowdsale": {
-    "ifSuccessfulSendTo": "<ETH Address>",
-    "fundingGoalInWei": 100000000000000,
-    "durationInMinutes": 10,
-    "costOfEachTokenInWei": 1000000000000000,
-    "addressOfTokenUsedAsReward": "<ETH Address>"
+    "ifSuccessfulSendTo": "< ETH address that funds are send to after succesfuly funding >",
+    "fundingGoalInEther": "500",
+    "durationInMinutes": 60,
+    "costOfEachTokenInEther": "1", // This will sell 100 * 10 ** decimals token to public
+    "amountOfTokenTransferPreSale": "50000000000000000000000" // 1 = 1 / 10^decimal
   }
 }
+
+
 ```
 
 # Compile
@@ -55,7 +60,7 @@ $ sh script/enter.sh
 
 # Deploy token
 
-Specify token specs in `config.json`
+Specify token specs in `config.json`.
 
 ```
 $ sh script/enter.sh
@@ -71,7 +76,7 @@ The token owner will be an address that is specified in `config.json`.
 
 Specify crowdsale specs in `config.json`.
 
-Use token address as `addressOfTokenUsedAsReward`.
+Specify token address at `addressOfTokenUsedAsReward`.
 
 Below command will actually deploy crowdsale contract and start crowdsale timer immediately.
 
@@ -80,27 +85,37 @@ $ sh script/enter.sh
 # node deployCrowdsale.js
 ```
 
+Created smartcontract address is the one that investors send ether to.
+When crowdsale contract receives ether, it will transfer tokens to investors automatically if contract address has enough token charged.
+
+# Charge token
+
 To actually start selling, tokens has to be charged to the crowdsale contract.
-To do so, below command can be used.
+To do so, specify `amountOfTokenTransferPreSale` and `crowdsaleAddress`.
+
+```
+# For dealing with overshoot, specify more token than above formula.
+amountOfTokenTransferPreSale >= fundingGoalInEther / costOfEachTokenInEther * 10 ** decimals
+```
+
+The leftover token can be returned by issuing `transferTokenBackToOwner(uint256 amount)`. 
+
+Below command will charge token to crowdsale.
 
 ```
 $ sh script/enter.sh
 # node chargeCrowdsale.js
 ```
 
-The command will automatically charge token required to reach funding goal.
-
-Created smartcontract address is the one that investors send ether to.
-When crowdsale contract receives ether, it will transfer tokens to investors automatically.
-
 # TODO
 
 - [x] Write test for `checkGoalReached`
 - [x] Write test for `safeWithdrawal`
+- [x] Test on Rinkeby
+- [x] Implement workaround for investment overshoot
 - [ ] Implement minimum investment threshold 
 - [ ] Implement maximum investment threshold 
-- [ ] Implement workaround for investment overshoot
 - [ ] Transfer token After completing crowdsale
-- [ ] Test on Rinkeby
+- [ ] Implement whitelisting token investors
 
 
