@@ -48,7 +48,11 @@ const ContractHelper = {
     }
   },
 
-  send: async (encodedData, contractAddress, gas=2000000, gasPrice=2000000) => {
+  send: async (compiledContract, customTokenAddress, crowdsaleAddress, amountOfTokenTransferPreSale, gas=2000000, gasPrice=2000000) => {
+    const abi = JSON.parse(compiledContract.interface);
+    const contract = new web3.eth.Contract(abi, customTokenAddress);
+    const encodedData = contract.methods.transfer(crowdsaleAddress, amountOfTokenTransferPreSale).encodeABI();
+
     const gasString = parseInt(gas).toString(16);
     const gasPriceString = parseInt(gasPrice).toString(16);
     const transactionObject = {
@@ -56,7 +60,7 @@ const ContractHelper = {
       gasPrice: gasPriceString,
       data: encodedData,
       from: address,
-      to: contractAddress
+      to: customTokenAddress
     };
 
     try {

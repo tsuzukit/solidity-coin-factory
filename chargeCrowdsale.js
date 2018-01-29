@@ -9,10 +9,5 @@ const fundingGoalInEther = config.crowdsale.fundingGoalInEther;
 const costOfEachTokenInEther = config.crowdsale.costOfEachTokenInEther;
 const amountOfTokenTransferPreSale = config.crowdsale.amountOfTokenTransferPreSale;
 
-const web3 = new Web3();
-const abi = JSON.parse(compiledCustomToken.interface);
-const contract = new web3.eth.Contract(abi, customTokenAddress);
-const data = contract.methods.transfer(crowdsaleAddress, amountOfTokenTransferPreSale);
-
-contractHelper.send(data, customTokenAddress);
+contractHelper.send(compiledCustomToken, customTokenAddress, crowdsaleAddress, amountOfTokenTransferPreSale);
 

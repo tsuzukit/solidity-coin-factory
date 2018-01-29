@@ -76,7 +76,7 @@ The token owner will be an address that is specified in `config.json`.
 
 Specify crowdsale specs in `config.json`.
 
-Use token address as `addressOfTokenUsedAsReward`.
+Specify token address at `addressOfTokenUsedAsReward`.
 
 Below command will actually deploy crowdsale contract and start crowdsale timer immediately.
 
@@ -86,20 +86,21 @@ $ sh script/enter.sh
 ```
 
 Created smartcontract address is the one that investors send ether to.
-When crowdsale contract receives ether, it will transfer tokens to investors automatically.
+When crowdsale contract receives ether, it will transfer tokens to investors automatically if contract address has enough token charged.
+
+# Charge token
 
 To actually start selling, tokens has to be charged to the crowdsale contract.
-To do so, first specify `amountOfTokenTransferPreSale`.
+To do so, specify `amountOfTokenTransferPreSale` and `crowdsaleAddress`.
 
 ```
+# For dealing with overshoot, specify more token than above formula.
 amountOfTokenTransferPreSale >= fundingGoalInEther / costOfEachTokenInEther * 10 ** decimals
 ```
 
-For dealing with overshoot, specify more token than above formula.
-
 The leftover token can be returned by issuing `transferTokenBackToOwner(uint256 amount)`. 
 
-To actually charging token to crowdsale, use below command.
+Below command will charge token to crowdsale.
 
 ```
 $ sh script/enter.sh
@@ -110,10 +111,11 @@ $ sh script/enter.sh
 
 - [x] Write test for `checkGoalReached`
 - [x] Write test for `safeWithdrawal`
-- [ ] Test on Rinkeby
+- [x] Test on Rinkeby
+- [x] Implement workaround for investment overshoot
 - [ ] Implement minimum investment threshold 
 - [ ] Implement maximum investment threshold 
-- [ ] Implement workaround for investment overshoot
 - [ ] Transfer token After completing crowdsale
+- [ ] Implement whitelisting token investors
 
 
