@@ -73,15 +73,25 @@ Specify crowdsale specs in `config.json`.
 
 Use token address as `addressOfTokenUsedAsReward`.
 
-Below command will actually deploy crowdsale contract and start crowdsale immediately.
+Below command will actually deploy crowdsale contract and start crowdsale timer immediately.
 
 ```
 $ sh script/enter.sh
 # node deployCrowdsale.js
 ```
 
+To actually start selling, tokens has to be charged to the crowdsale contract.
+To do so, below command can be used.
+
+```
+$ sh script/enter.sh
+# node chargeCrowdsale.js
+```
+
+The command will automatically charge token required to reach funding goal.
+
 Created smartcontract address is the one that investors send ether to.
-When crowdsale contract recieves ether, it will transfer tokens to investors.
+When crowdsale contract receives ether, it will transfer tokens to investors automatically.
 
 # TODO
 
