@@ -4,6 +4,7 @@ const web3 = new Web3();
 const contractHelper = require('./contractHelper.js');
 const compiledCrowdsale = require('./build/Crowdsale.json');
 
+const tokenDecimals = config.customToken.decimals;
 const addressOfTokenUsedAsReward = config.customTokenAddress;
 const ifSuccessfulSendTo = config.crowdsale.ifSuccessfulSendTo;
 const fundingGoalInEther = config.crowdsale.fundingGoalInEther;
@@ -15,7 +16,8 @@ const argumetns = [
   contractHelper.toString(web3.utils.toWei(fundingGoalInEther)),
   durationInMinutes,
   contractHelper.toString(web3.utils.toWei(costOfEachTokenInEther)),
-  addressOfTokenUsedAsReward
+  addressOfTokenUsedAsReward,
+  tokenDecimals
 ];
 contractHelper.deploy(compiledCrowdsale, argumetns);
 

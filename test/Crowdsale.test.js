@@ -3,22 +3,30 @@ const ganache = require('ganache-cli');
 const Web3 = require('Web3');
 const provider = ganache.provider();
 const web3 = new Web3(provider);
+const config = require('../config.json');
+const contractHelper = require('../contractHelper.js');
 
 const compiledCustomToken = require('../build/CustomToken.json');
 const compiledCrowdsale = require('../build/Crowdsale.json');
 
-const initialSupply = web3.utils.toWei("50", "ether");
-const tokenName = "SaunaToken";
-const tokenSymbol = "SAU";
-const fundingGoalInWei = web3.utils.toWei("10", "ether");
-const durationInMinutes = 1;
-const costOfEachTokenInWei = web3.utils.toWei("0.000001", "ether");
-const amountOfTokenTransferPreSale = (fundingGoalInWei / costOfEachTokenInWei).toString();
+const initialSupply = contractHelper.toString(contractHelper.toMinimumUnit(config.customToken.initialSupply));
+console.log("initial Supply is " + initialSupply);
+
+const tokenName = config.customToken.tokenName;
+const tokenSymbol = config.customToken.tokenSymbol;
+const tokenDecimals = config.customToken.decimals;
+
+const durationInMinutes = config.crowdsale.durationInMinutes;
+const fundingGoalInEther = config.crowdsale.fundingGoalInEther;
+const costOfEachTokenInEther = config.crowdsale.costOfEachTokenInEther;
+const fundingGoalInWei = web3.utils.toWei(fundingGoalInEther);
+const costOfEachTokenInWei = web3.utils.toWei(costOfEachTokenInEther);
+const amountOfTokenTransferPreSale = contractHelper.toString(contractHelper.toMinimumUnit(fundingGoalInEther / costOfEachTokenInEther).toString());
+
 let accounts;
 let customToken;
 let crowdsale;
 let initialBalance;
-
 
 const increaseTime = function(duration) {
   const id = Date.now();
@@ -40,7 +48,6 @@ const increaseTime = function(duration) {
 };
 
 
-
 beforeEach( async () => {
   accounts = await web3.eth.getAccounts();
   initialBalance = await web3.eth.getBalance(accounts[0]);
@@ -48,7 +55,7 @@ beforeEach( async () => {
   customToken = await new web3.eth.Contract(JSON.parse(compiledCustomToken.interface))
     .deploy({
       data: compiledCustomToken.bytecode,
-      arguments: [initialSupply, tokenName, tokenSymbol]
+      arguments: [initialSupply, tokenName, tokenSymbol, tokenDecimals]
     })
     .send({
       from: accounts[0], gas: '2000000'
@@ -65,7 +72,8 @@ beforeEach( async () => {
         fundingGoalInWei,
         durationInMinutes,
         costOfEachTokenInWei,
-        addressOfTokenUsedAsReward
+        addressOfTokenUsedAsReward,
+        tokenDecimals
       ]
     })
     .send({
@@ -103,7 +111,7 @@ describe('crowdsale', () => {
     });
 
     const investorBalance = await customToken.methods.balanceOf(accounts[1]).call();
-    assert.equal(investmentInWei / costOfEachTokenInWei, investorBalance);
+    assert.equal(investmentInWei * 10 ** tokenDecimals / costOfEachTokenInWei, investorBalance);
 
     const tokenBalanceAtCrowdsaleAfterPurchase = await customToken.methods.balanceOf(crowdsale.options.address).call();
     assert.equal(tokenBalanceAtCrowdsale, (parseInt(tokenBalanceAtCrowdsaleAfterPurchase) + parseInt(investorBalance)).toString());
@@ -133,8 +141,9 @@ describe('crowdsale', () => {
     assert(!isClowdsaleClosed);
     let fundingGoalReached = await crowdsale.methods.fundingGoalReached().call();
     assert(!fundingGoalReached);
+
+    const investmentInWei = web3.utils.toWei(config.crowdsale.fundingGoalInEther, "ether"); // this is funding goal
     try {
-      const investmentInWei = web3.utils.toWei("10", "ether"); // this is funding goal
       await web3.eth.sendTransaction({
         to: crowdsale.options.address,
         from: accounts[1],
@@ -143,15 +152,20 @@ describe('crowdsale', () => {
       });
     }
     catch (err) {
+      console.log(err);
     }
     isClowdsaleClosed = await crowdsale.methods.crowdsaleClosed().call();
     assert(isClowdsaleClosed);
     fundingGoalReached = await crowdsale.methods.fundingGoalReached().call();
     assert(fundingGoalReached);
+
+    // check crowdsale actually has ether of funding goal amount
     let amount = await web3.eth.getBalance(crowdsale.options.address);
-    assert.equal(10, web3.utils.fromWei(amount));
+    assert.equal(config.crowdsale.fundingGoalInEther, web3.utils.fromWei(amount));
+
+    // check amount raised is same as the wei sent
     let amountRaised = await crowdsale.methods.amountRaised().call();
-    assert.equal(10, web3.utils.fromWei(amountRaised));
+    assert.equal(investmentInWei, amountRaised);
   });
 
   it('cannot withdraw ether before ending crowdsale', async () => {
@@ -167,7 +181,7 @@ describe('crowdsale', () => {
     }
   });
 
-  it('can withdraw ether before ending crowdsale', async () => {
+  it('can withdraw ether after ending crowdsale', async () => {
     await increaseTime(10000);
     try {
       await crowdsale.methods.safeWithdrawal().send({
@@ -185,10 +199,10 @@ describe('crowdsale', () => {
     let amount = await web3.eth.getBalance(crowdsale.options.address);
     assert.equal(0, amount);
 
-    const investmentInWei = web3.utils.toWei("10", "ether"); // this is funding goal
+    const investmentInWei = web3.utils.toWei(config.crowdsale.fundingGoalInEther, "ether");
     await web3.eth.sendTransaction({
       to: crowdsale.options.address,
-      from: accounts[1],
+      from: accounts[2],
       value: investmentInWei,
       gas: '1000000'
     });
@@ -196,7 +210,7 @@ describe('crowdsale', () => {
     assert(fundingGoalReached);
 
     amount = await web3.eth.getBalance(crowdsale.options.address);
-    assert.equal(10, web3.utils.fromWei(amount));
+    assert.equal(investmentInWei, amount);
 
     await increaseTime(10000);
     await crowdsale.methods.safeWithdrawal().send({
