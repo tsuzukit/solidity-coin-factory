@@ -8,7 +8,7 @@ const tokenSymbol = config.customToken.tokenSymbol;
 const tokenDecimals = config.customToken.decimals;
 
 const arguments = [
-  contractHelper.toString(contractHelper.toMinimumUnit(initialSupply)),
+  initialSupply,
   tokenName,
   tokenSymbol,
   contractHelper.toString(tokenDecimals)

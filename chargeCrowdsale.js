@@ -7,7 +7,7 @@ const crowdsaleAddress = config.crowdsaleAddress;
 const customTokenAddress = config.customTokenAddress;
 const fundingGoalInEther = config.crowdsale.fundingGoalInEther;
 const costOfEachTokenInEther = config.crowdsale.costOfEachTokenInEther;
-const amountOfTokenTransferPreSale = contractHelper.toMinimumUnit(fundingGoalInEther / costOfEachTokenInEther).toString();
+const amountOfTokenTransferPreSale = config.crowdsale.amountOfTokenTransferPreSale;
 
 const web3 = new Web3();
 const abi = JSON.parse(compiledCustomToken.interface);

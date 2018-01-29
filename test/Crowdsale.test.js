@@ -9,7 +9,7 @@ const contractHelper = require('../contractHelper.js');
 const compiledCustomToken = require('../build/CustomToken.json');
 const compiledCrowdsale = require('../build/Crowdsale.json');
 
-const initialSupply = contractHelper.toString(contractHelper.toMinimumUnit(config.customToken.initialSupply));
+const initialSupply = config.customToken.initialSupply;
 console.log("initial Supply is " + initialSupply);
 
 const tokenName = config.customToken.tokenName;
@@ -21,7 +21,7 @@ const fundingGoalInEther = config.crowdsale.fundingGoalInEther;
 const costOfEachTokenInEther = config.crowdsale.costOfEachTokenInEther;
 const fundingGoalInWei = web3.utils.toWei(fundingGoalInEther);
 const costOfEachTokenInWei = web3.utils.toWei(costOfEachTokenInEther);
-const amountOfTokenTransferPreSale = contractHelper.toString(contractHelper.toMinimumUnit(fundingGoalInEther / costOfEachTokenInEther).toString());
+const amountOfTokenTransferPreSale = config.crowdsale.amountOfTokenTransferPreSale;
 
 let accounts;
 let customToken;
@@ -82,9 +82,13 @@ beforeEach( async () => {
   crowdsale.setProvider(provider);
 
   // charge token pre sale
-  const result = await customToken.methods.transfer(crowdsale.options.address, amountOfTokenTransferPreSale).send({
-    from: accounts[0]
-  });
+  try {
+    const result = await customToken.methods.transfer(crowdsale.options.address, amountOfTokenTransferPreSale).send({
+      from: accounts[0]
+    });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 describe('crowdsale', () => {
@@ -100,9 +104,38 @@ describe('crowdsale', () => {
     assert.equal(amountOfTokenTransferPreSale, tokenBalanceAtCrowdsale);
   });
 
+  it('manager can send token back from crowdsale contract', async () => {
+    const tokenBalanceAtManager = await customToken.methods.balanceOf(accounts[0]).call();
+    assert.equal(initialSupply - amountOfTokenTransferPreSale, tokenBalanceAtManager);
+    const tokenBalanceAtCrowdsale = await customToken.methods.balanceOf(crowdsale.options.address).call();
+    assert.equal(amountOfTokenTransferPreSale, tokenBalanceAtCrowdsale);
+
+    await crowdsale.methods.transferTokenBackToOwner(amountOfTokenTransferPreSale).send({
+      from: accounts[0],
+      gas: '1000000'
+    });
+    const tokenBalanceAtCrowdsaleAfterRefund = await customToken.methods.balanceOf(crowdsale.options.address).call();
+    assert.equal(tokenBalanceAtCrowdsale - amountOfTokenTransferPreSale, tokenBalanceAtCrowdsaleAfterRefund);
+    const tokenBalanceAtManagerAfterRefund = await customToken.methods.balanceOf(accounts[0]).call();
+    assert.equal(initialSupply, tokenBalanceAtManagerAfterRefund);
+  });
+
+  it('only manager can send token back', async () => {
+    try {
+      await crowdsale.methods.transferTokenBackToOwner(amountOfTokenTransferPreSale).send({
+        from: accounts[1],
+        gas: '1000000'
+      });
+      assert(false);
+    }
+    catch (err) {
+      assert(true);
+    }
+  });
+
   it('investor can purchase token from crowdsale', async () => {
     const tokenBalanceAtCrowdsale = await customToken.methods.balanceOf(crowdsale.options.address).call();
-    const investmentInWei = web3.utils.toWei("1", "ether");
+    const investmentInWei = web3.utils.toWei((config.crowdsale.fundingGoalInEther * 0.1).toString(), "ether");
     await web3.eth.sendTransaction({
       to: crowdsale.options.address,
       from: accounts[1],
@@ -114,7 +147,7 @@ describe('crowdsale', () => {
     assert.equal(investmentInWei * 10 ** tokenDecimals / costOfEachTokenInWei, investorBalance);
 
     const tokenBalanceAtCrowdsaleAfterPurchase = await customToken.methods.balanceOf(crowdsale.options.address).call();
-    assert.equal(tokenBalanceAtCrowdsale, (parseInt(tokenBalanceAtCrowdsaleAfterPurchase) + parseInt(investorBalance)).toString());
+    assert.equal(tokenBalanceAtCrowdsale, (parseInt(tokenBalanceAtCrowdsaleAfterPurchase) + parseInt(investorBalance)));
   });
 
   it('Clowdsale closed after deadline', async () => {
@@ -122,7 +155,7 @@ describe('crowdsale', () => {
     assert(!isClowdsaleClosed);
     await increaseTime(10000);
     try {
-      const investmentInWei = web3.utils.toWei("1", "ether");
+      const investmentInWei = web3.utils.toWei((config.crowdsale.fundingGoalInEther * 0.1).toString(), "ether");
       await web3.eth.sendTransaction({
         to: crowdsale.options.address,
         from: accounts[1],
@@ -221,11 +254,11 @@ describe('crowdsale', () => {
     afterBalance = await web3.eth.getBalance(accounts[0]);
     const initialBalanceInEther = web3.utils.fromWei(initialBalance);
     const afterBalanceInEther = web3.utils.fromWei(afterBalance);
-    assert(afterBalanceInEther - initialBalanceInEther > 9)
+    assert(afterBalanceInEther - initialBalanceInEther > config.crowdsale.fundingGoalInEther * 0.8)
   });
 
   it('investor can withdraw ether when funding goal is not reached', async () => {
-    const investmentInWei = web3.utils.toWei("2", "ether"); // this is funding goal
+    const investmentInWei = web3.utils.toWei((config.crowdsale.fundingGoalInEther * 0.1).toString(), "ether");
     await web3.eth.sendTransaction({
       to: crowdsale.options.address,
       from: accounts[1],
@@ -243,7 +276,7 @@ describe('crowdsale', () => {
 
     const balanceAfterInvestmentInEther = web3.utils.fromWei(balanceAfterInvestment);
     const balanceAfterRefundInEther = web3.utils.fromWei(balanceAfterRefund);
-    assert(balanceAfterRefundInEther - balanceAfterInvestmentInEther > 1.5);
+    assert(balanceAfterRefundInEther - balanceAfterInvestmentInEther > config.crowdsale.fundingGoalInEther * 0.1 * 0.8);
   });
 
 });
