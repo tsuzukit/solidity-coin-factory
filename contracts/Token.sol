@@ -171,10 +171,6 @@ contract TokenERC20 {
     }
 }
 
-/******************************************/
-/*       ADVANCED TOKEN STARTS HERE       */
-/******************************************/
-
 contract CustomToken is owned, TokenERC20 {
 
     uint256 public sellPrice;
