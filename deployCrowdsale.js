@@ -6,9 +6,9 @@ const address = config.address;
 const privateKey = config.privateKey;
 
 const ifSuccessfulSendTo = config.crowdsale.ifSuccessfulSendTo;
-const fundingGoalInEthers = config.crowdsale.fundingGoalInEthers;
+const fundingGoalInWei = config.crowdsale.fundingGoalInWei;
 const durationInMinutes = config.crowdsale.durationInMinutes;
-const etherCostOfEachToken = config.crowdsale.etherCostOfEachToken;
+const costOfEachTokenInWei = config.crowdsale.costOfEachTokenInWei;
 const addressOfTokenUsedAsReward = config.crowdsale.addressOfTokenUsedAsReward;
 
 const provider = new Web3.providers.HttpProvider(config.endpoint);
@@ -21,15 +21,15 @@ const deploy = async () => {
     data: '0x' + compiledCrowdsale.bytecode,
     arguments: [
       ifSuccessfulSendTo,
-      fundingGoalInEthers,
+      fundingGoalInWei,
       durationInMinutes,
-      etherCostOfEachToken,
+      costOfEachTokenInWei,
       addressOfTokenUsedAsReward
     ],
   }).encodeABI();
 
-  const gas = parseInt(1000000).toString(16);
-  const gasPrice = parseInt(1000000).toString(16);
+  const gas = parseInt(2000000).toString(16);
+  const gasPrice = parseInt(2000000).toString(16);
   const transactionObject = {
     gas: gas,
     gasPrice: gasPrice,

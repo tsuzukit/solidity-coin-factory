@@ -5,24 +5,20 @@ const compiledCustomToken = require('./build/CustomToken.json');
 const address = config.address;
 const privateKey = config.privateKey;
 
-const initialSupply = config.customToken.initialSupply;
-const tokenName = config.customToken.tokenName;
-const tokenSymbol = config.customToken.tokenSymbol;
-
 const provider = new Web3.providers.HttpProvider(config.endpoint);
 const web3 = new Web3(provider);
 const abi = JSON.parse(compiledCustomToken.interface);
-const contract = new web3.eth.Contract(abi);
 
-const deploy = async () => {
-  const data = contract.deploy({
-    data: '0x' + compiledCustomToken.bytecode,
-    arguments: [
-      initialSupply,
-      tokenName,
-      tokenSymbol
-    ],
-  }).encodeABI();
+const crowdsaleAddress = config.charge.address;
+const addressOfTokenUsedAsReward = config.crowdsale.addressOfTokenUsedAsReward;
+const fundingGoalInWei = config.crowdsale.fundingGoalInWei;
+const costOfEachTokenInWei = config.crowdsale.costOfEachTokenInWei;
+const amountOfTokenTransferPreSale = (fundingGoalInWei / costOfEachTokenInWei).toString();
+
+const contract = new web3.eth.Contract(abi, addressOfTokenUsedAsReward);
+
+const send = async () => {
+  const data = contract.methods.transfer(crowdsaleAddress, amountOfTokenTransferPreSale).encodeABI();
 
   const gas = parseInt(2000000).toString(16);
   const gasPrice = parseInt(2000000).toString(16);
@@ -31,6 +27,7 @@ const deploy = async () => {
     gasPrice: gasPrice,
     data: data,
     from: address,
+    to: addressOfTokenUsedAsReward
   };
 
   try {
@@ -41,6 +38,7 @@ const deploy = async () => {
   catch (err) {
     console.log(err);
   }
+
 };
-deploy();
+send();
 
