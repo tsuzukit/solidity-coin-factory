@@ -25,8 +25,7 @@ contract TokenERC20 {
     // Public variables of the token
     string public name;
     string public symbol;
-    uint8 public decimals = 18;
-    // 18 decimals is the strongly suggested default, avoid changing it
+    uint8 public decimals;
     uint256 public totalSupply;
 
     // This creates an array with all balances
@@ -47,12 +46,14 @@ contract TokenERC20 {
     function TokenERC20(
         uint256 initialSupply,
         string tokenName,
-        string tokenSymbol
+        string tokenSymbol,
+        uint8 tokenDecimals
     ) public {
         totalSupply = initialSupply;                        // Update total supply with the decimal amount
         balanceOf[msg.sender] = totalSupply;                // Give the creator all initial tokens
         name = tokenName;                                   // Set the name for display purposes
         symbol = tokenSymbol;                               // Set the symbol for display purposes
+        decimals = tokenDecimals;
     }
 
     /**
@@ -185,8 +186,9 @@ contract CustomToken is owned, TokenERC20 {
     function CustomToken(
         uint256 initialSupply,
         string tokenName,
-        string tokenSymbol
-    ) TokenERC20(initialSupply, tokenName, tokenSymbol) public {}
+        string tokenSymbol,
+        uint8 tokenDecimals
+    ) TokenERC20(initialSupply, tokenName, tokenSymbol, tokenDecimals) public {}
 
     /* Internal transfer, only can be called by this contract */
     function _transfer(address _from, address _to, uint _value) internal {

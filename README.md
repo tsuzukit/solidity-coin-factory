@@ -22,22 +22,47 @@ Create `config.json` at root folder
 
 ```
 {
-  "endpoint": "https://rinkeby.infura.io/<TOKEN from Infura>",
-  "address": "<ETH Address>",
-  "privateKey": "<ETH Private Key>"
+  "endpoint": "< endpoint create via infura >",
+  "address": "< ETH address. This will be token owner >",
+  "privateKey": "< ETH private key >",
   "customToken": {
-    "initialSupply": "1000000",
+    "initialSupply": "50000", // total supply should be initialSupply * 10 * 10 ** decimals
     "tokenName": "SaunaToken",
-    "tokenSymbol": "SAU"
+    "tokenSymbol": "SAU",
+    "decimals": 18 // 18 decimals is strongly recommended
   },
+  "customTokenAddress": "< Cutom token contract address >", // Required to dploy crowdsale and charge to it
+  "crowdsaleAddress": "< Crowdsale contract address >", // Required to charge token to crowdsale
   "crowdsale": {
-    "ifSuccessfulSendTo": "<ETH Address>",
-    "fundingGoalInWei": 100000000000000,
-    "durationInMinutes": 10,
-    "costOfEachTokenInWei": 1000000000000000,
-    "addressOfTokenUsedAsReward": "<ETH Address>"
+    "ifSuccessfulSendTo": "< ETH address that funds are send to after succesfuly funding >",
+    "fundingGoalInWei": "100000000000000000",
+    "durationInMinutes": 60,
+    "costOfEachTokenInWei": "100000000000000000",
   }
 }
+
+
+{
+  "endpoint": "< endpoint create via infura >",
+  "address": "< ETH address. This will be token owner >",
+  "privateKey": "< ETH private key >",
+  "customToken": {
+    "initialSupply": "50000", // total supply should be initialSupply * 10 * 10 ** decimals
+    "tokenName": "SaunaToken",
+    "tokenSymbol": "SAU",
+    "decimals": 18 // 18 decimals is strongly recommended
+  },
+  "customTokenAddress": "< Cutom token contract address >", // Required to dploy crowdsale and charge to it
+  "crowdsaleAddress": "< Crowdsale contract address >", // Required to charge token to crowdsale
+  "crowdsale": {
+    "ifSuccessfulSendTo": "< ETH address that funds are send to after succesfuly funding >",
+    "fundingGoalInEther": "100",
+    "durationInMinutes": 60,
+    "costOfEachTokenInEther": "1", // This will sell 100 * 10 ** decimals token to public
+  }
+}
+
+
 ```
 
 # Compile
