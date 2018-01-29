@@ -254,7 +254,7 @@ describe('crowdsale', () => {
     afterBalance = await web3.eth.getBalance(accounts[0]);
     const initialBalanceInEther = web3.utils.fromWei(initialBalance);
     const afterBalanceInEther = web3.utils.fromWei(afterBalance);
-    assert(afterBalanceInEther - initialBalanceInEther > config.crowdsale.fundingGoalInEther * 0.8)
+    assert(afterBalanceInEther - initialBalanceInEther > config.crowdsale.fundingGoalInEther * 0.5)
   });
 
   it('investor can withdraw ether when funding goal is not reached', async () => {
