@@ -107,6 +107,14 @@ $ sh script/enter.sh
 # node chargeCrowdsale.js
 ```
 
+# Application
+
+Create PR to `https://github.com/kvhnuke/etherwallet` by adding your token at `https://github.com/kvhnuke/etherwallet/blob/mercury/app/scripts/tokens/ethTokens.json`.
+
+Token information can be updated at `etherscan.io`.
+
+Go to `https://rinkeby.etherscan.io/token/< Contract address >` to set meta info.
+
 # TODO
 
 - [x] Write test for `checkGoalReached`
